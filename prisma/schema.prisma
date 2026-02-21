@@ -25,44 +25,53 @@ enum BookingStatus {
 }
 
 model User {
-  id            String     @id
+  id            String  @id @default(uuid())
   name          String
-  role          UserRole
-  status        UserStatus @default(ACTIVE)
-  email         String
-  emailVerified Boolean    @default(false)
+  email         String  @unique
+  emailVerified Boolean @default(false)
   image         String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  sessions      Session[]
-  accounts      Account[]
 
-  @@unique([email])
+  role   UserRole
+  status UserStatus @default(ACTIVE)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  sessions  Session[]
+  accounts  Account[]
+
+  tutorProfile TutorProfile?
+  bookings     Booking[]     @relation("StudentBookings")
+  reviews      Review[]
+
+  @@index([role])
+  @@index([status])
   @@map("user")
 }
 
 model Session {
-  id        String   @id
+  id        String   @id @default(uuid())
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@map("session")
 }
 
 model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String @id @default(uuid())
+  accountId  String
+  providerId String
+  userId     String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -70,21 +79,76 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@map("account")
 }
 
 model Verification {
-  id         String   @id
+  id         String   @id @default(uuid())
   identifier String
   value      String
   expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([identifier])
   @@map("verification")
+}
+
+// PROJECT MODELS
+model Category {
+  id     String         @id @default(uuid())
+  name   String         @unique
+  tutors TutorProfile[]
+
+  @@map("category")
+}
+
+model TutorProfile {
+  id           String   @id @default(uuid())
+  bio          String?
+  skills       String[]
+  pricePerHour Float
+  rating       Float    @default(0.0)
+  availability Json?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  bookings Booking[] @relation("TutorBookings")
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  scheduledDate DateTime
+  status        BookingStatus @default(CONFIRMED)
+
+  studentId String
+  student   User   @relation("StudentBookings", fields: [studentId], references: [id])
+
+  tutorId String
+  tutor   TutorProfile @relation("TutorBookings", fields: [tutorId], references: [id])
+
+  review Review?
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id])
+
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id])
 }
