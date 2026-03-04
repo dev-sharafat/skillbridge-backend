@@ -19,7 +19,7 @@ TutorRoute.patch(
 
 )
 TutorRoute.get(
-    "/", auth(UserRole.TUTOR),
+    "/",
     TutorController.getAllTutorProfile
 
 )

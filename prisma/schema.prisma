@@ -104,7 +104,7 @@ model Verification {
 model Category {
   id     String         @id @default(uuid())
   name   String         @unique
-  tutors TutorProfile[]
+ 
 
   @@map("category")
 }
@@ -114,14 +114,14 @@ model TutorProfile {
   bio          String?
   skills       String[]
   pricePerHour Float
-  rating       Float    @default(0.0)
+  rating       Float    
   availability Json?
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
+  category String
+  
 
   bookings Booking[] @relation("TutorBookings")
 }

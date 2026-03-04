@@ -1,4 +1,5 @@
 import { Request } from "express"
+import { TutorProfileWhereInput } from "../../../generated/prisma/models"
 import { AppError } from "../../error/AppError"
 import { prisma } from "../../lib/prisma"
 
@@ -15,10 +16,10 @@ const createTutorProfileIntoDb = async (req: Request) => {
         skills,
         pricePerHour,
         availability,
-        categoryId
+        category
     } = req.body
 
-    if (!categoryId) {
+    if (!category) {
         throw new AppError("Category is required", 400)
     }
 
@@ -48,9 +49,7 @@ const createTutorProfileIntoDb = async (req: Request) => {
             user: {
                 connect: { id: userId }
             },
-            category: {
-                connect: { id: categoryId }
-            }
+            category
         }
     })
 
@@ -69,7 +68,7 @@ const updateTutorProfileIntoDb = async (req: Request) => {
         skills,
         pricePerHour,
         availability,
-        categoryId
+        category, rating
     } = req.body
 
     // 1️⃣ Check tutor profile exists
@@ -81,18 +80,7 @@ const updateTutorProfileIntoDb = async (req: Request) => {
         throw new AppError("Tutor profile not found", 404)
     }
 
-    // 2️⃣ If category change requested → check exists
-    if (categoryId) {
-        const categoryExists = await prisma.category.findUnique({
-            where: { id: categoryId }
-        })
 
-        if (!categoryExists) {
-            throw new AppError("Category not found", 404)
-        }
-    }
-
-    // 3️⃣ Prepare update payload (only provided fields)
     const updateData: any = {}
 
     if (bio !== undefined) updateData.bio = bio
@@ -100,12 +88,11 @@ const updateTutorProfileIntoDb = async (req: Request) => {
     if (pricePerHour !== undefined) updateData.pricePerHour = pricePerHour
     if (availability !== undefined) updateData.availability = availability
 
-    if (categoryId) {
-        updateData.category = {
-            connect: { id: categoryId }
-        }
-    }
+    if (category) {
+        updateData.category = category
 
+    }
+    if (rating !== undefined) updateData.rating = rating
     // 4️⃣ Update profile
     const result = await prisma.tutorProfile.update({
         where: { userId },
@@ -116,13 +103,39 @@ const updateTutorProfileIntoDb = async (req: Request) => {
 }
 
 
-const getAllTutorProfileIntoDb = async () => {
-    return await prisma.tutorProfile.findMany()
+const getAllTutorProfileIntoDb = async (req: Request) => {
+    const { search } = req.query
+    const { rating } = req.query
+    const { pricePerHour } = req.query
+    const andConditions: TutorProfileWhereInput[] = []
+    console.log(search)
+    if (search) {
+        andConditions.push({
+            OR: [
+                {
+                    category: {
+                        contains: search as string,
+                        mode: "insensitive"
+                    }
+                },
+
+
+            ]
+        })
+    }
+    const getPost = await prisma.tutorProfile.findMany({
+        where: {
+            AND: andConditions
+        }
+    })
+    return getPost;
+    // return await prisma.tutorProfile.findMany()
 }
 const getTutorProfileByIdIntoDb = async (req: Request) => {
+    const { id } = req.params
     return await prisma.tutorProfile.findFirst({
         where: {
-            id: req?.body?.id
+            id: id as string
         }
     })
 }
@@ -131,5 +144,5 @@ const getTutorProfileByIdIntoDb = async (req: Request) => {
 
 
 export const TutorService = {
-    createTutorProfileIntoDb, getAllTutorProfileIntoDb, getTutorProfileByIdIntoDb,updateTutorProfileIntoDb
+    createTutorProfileIntoDb, getAllTutorProfileIntoDb, getTutorProfileByIdIntoDb, updateTutorProfileIntoDb
 }

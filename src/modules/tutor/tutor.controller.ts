@@ -6,7 +6,7 @@ const createTutorProfile = async(req:Request,res:Response)=>{
     res.status(201).json({success:true,message:"Tutor profile is successfully created...",data:result})
 }
 const getAllTutorProfile = async(req:Request,res:Response)=>{
-    const result = await TutorService.getAllTutorProfileIntoDb()
+    const result = await TutorService.getAllTutorProfileIntoDb(req)
     res.status(201).json({success:true,message:"Tutor profile is successfully fetch...",data:result})
 }
 const getTutorProfileById = async(req:Request,res:Response)=>{
