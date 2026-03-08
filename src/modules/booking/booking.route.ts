@@ -2,12 +2,18 @@ import express from "express"
 import { auth } from "../../middleware/auth"
 import { UserRole } from "../../../generated/prisma/enums"
 import { BookingController } from "./booking.controller"
+import RequestValidator from "../../middleware/request_Validetor"
+import { BookingValidation } from "./booking.validation"
 
 const bookingRoute = express.Router()
 bookingRoute.post(
     "/",
-    auth(UserRole.STUDENT),
+    auth(UserRole.STUDENT),RequestValidator(BookingValidation.create),
     BookingController.postBooking
+)
+bookingRoute.get(
+    "/",
+    auth(UserRole.STUDENT),BookingController.getAllBookingByStudentId
 )
 
 export default bookingRoute
