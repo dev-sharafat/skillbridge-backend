@@ -15,5 +15,9 @@ bookingRoute.get(
     "/",
     auth(UserRole.STUDENT),BookingController.getAllBookingByStudentId
 )
+bookingRoute.get(
+    "/:tutorId",
+    auth(UserRole.STUDENT),BookingController.getBookingByTutorId
+)
 
 export default bookingRoute

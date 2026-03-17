@@ -33,17 +33,46 @@ const postBookingIntoDb = async (req: Request) => {
     });
     return result
 }
+const getAllBookingByTutorIdIntoDb = async (req: Request) => {
+    const { tutorId } = req.params;
 
+    const tutorExists = await prisma.tutorProfile.findFirst({
+        where: {
+            id: tutorId as string
+        },
+        select: {
+            id: true,
+        }
+    });
+
+    if (!tutorExists) {
+        throw new AppError("The Tutor is not valid...", 404);
+    }
+
+    const result = await prisma.booking.findMany({
+        where: {
+            tutorId: tutorId as string // ✅ correct way
+        },
+        include: {
+            student: true, 
+           
+        }
+    });
+
+    return result;
+};
 const getAllBookingByStudentIdIntoDb = async (req: Request) => {
     const userId = req.user?.id
     const result = prisma.booking.findMany({
-        where:{
-            studentId:userId as string
+        where: {
+            studentId: userId as string
         }
     })
     return result
 }
 
+
+
 export const BookingService = {
-    postBookingIntoDb, getAllBookingByStudentIdIntoDb
+    postBookingIntoDb, getAllBookingByStudentIdIntoDb, getAllBookingByTutorIdIntoDb
 }
