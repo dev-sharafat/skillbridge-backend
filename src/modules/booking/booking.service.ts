@@ -54,8 +54,8 @@ const getAllBookingByTutorIdIntoDb = async (req: Request) => {
             tutorId: tutorId as string // ✅ correct way
         },
         include: {
-            student: true, 
-           
+            student: true,
+
         }
     });
 
@@ -71,8 +71,12 @@ const getAllBookingByStudentIdIntoDb = async (req: Request) => {
     return result
 }
 
+// const getAllBookingIntoDb = async(req:Request)=>{
+//     return await prisma.booking.findMany()
+//     console.log(req)
+// }
 
 
 export const BookingService = {
-    postBookingIntoDb, getAllBookingByStudentIdIntoDb, getAllBookingByTutorIdIntoDb
+    postBookingIntoDb, getAllBookingByStudentIdIntoDb, getAllBookingByTutorIdIntoDb,
 }

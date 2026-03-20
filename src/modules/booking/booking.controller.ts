@@ -16,6 +16,11 @@ const getBookingByTutorId = async (req: Request, res: Response) => {
     res.status(200).json({ success: true, message: "Booking are fetched...", data: result })
 
 }
+// const getAllBookings = async (req: Request, res: Response) => {
+//     console.log(req.user)
+//     const result = await BookingService.getAllBookingIntoDb(req)
+//     res.status(200).json({ success: true, message: "All Booking are fetched...", data: result })
+// }
 export const BookingController = {
-    postBooking, getAllBookingByStudentId, getBookingByTutorId
+    postBooking, getAllBookingByStudentId, getBookingByTutorId,
 }

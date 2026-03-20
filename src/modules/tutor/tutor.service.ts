@@ -105,16 +105,17 @@ const updateTutorProfileIntoDb = async (req: Request) => {
 
 const getAllTutorProfileIntoDb = async (req: Request) => {
     const { search } = req.query
+    const searchTerm = (search as string)?.trim();
     const { rating } = req.query
     const { pricePerHour } = req.query
-    const andConditions: TutorProfileWhereInput[] = []
-    console.log(search)
-    if (search) {
-        andConditions.push({
+    const orConditions: TutorProfileWhereInput[] = []
+
+    if (searchTerm) {
+        orConditions.push({
             OR: [
                 {
                     category: {
-                        contains: search as string,
+                        contains: searchTerm as string,
                         mode: "insensitive"
                     }
                 },
@@ -123,13 +124,30 @@ const getAllTutorProfileIntoDb = async (req: Request) => {
             ]
         })
     }
+    if (rating) {
+        orConditions.push({
+            OR: [
+                {
+                    rating: Number(rating)
+                    
+                }
+            ]
+        })
+    }
+    if (pricePerHour) {
+        orConditions.push({
+            pricePerHour: Number(pricePerHour) // or equals
+
+        });
+    }
     const getPost = await prisma.tutorProfile.findMany({
-        where: {
-            AND: andConditions
-        }
+        where: orConditions.length > 0 ?
+            {
+                OR: orConditions
+            } :
+            {}
     })
     return getPost;
-    // return await prisma.tutorProfile.findMany()
 }
 const getTutorProfileByIdIntoDb = async (req: Request) => {
     const { id } = req.params
