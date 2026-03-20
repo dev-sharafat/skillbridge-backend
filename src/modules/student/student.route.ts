@@ -6,6 +6,8 @@ import { StudentController } from "./student.controller"
 import { StudentValidation } from "./student.validation"
 const studentRouter = express.Router()
 
+
+
 studentRouter.get(
     "/:studentId",
     auth(UserRole.STUDENT),
